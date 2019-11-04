@@ -23,8 +23,7 @@ ui <- fluidPage(
       
       # Horizontal line ----
       tags$hr(),
-      p("Click to download ",a("Example Dataset", 
-                               href = "http://shiny.rstudio.com"),". "),
+      p("Click to download ",a("Example Dataset", href = "http://shiny.rstudio.com"),". "),
       # Horizontal line ----
       tags$hr(),
       
