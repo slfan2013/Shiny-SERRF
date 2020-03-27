@@ -1,0 +1,12 @@
+name: Shiny-SERRF
+title: Shiny-SERRF
+username:
+account: slfan
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1420243
+bundleId: 2831778
+url: https://slfan.shinyapps.io/Shiny-SERRF/
+when: 1582733644.84524
+asMultiple: FALSE
+asStatic: FALSE

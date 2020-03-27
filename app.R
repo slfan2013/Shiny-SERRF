@@ -2,59 +2,76 @@ library(shiny)
 library(data.table)
 library(parallel)
 library(ranger)
-# Define UI for data upload app ----
-ui <- fluidPage(
+library(openxlsx)
+library(pacman)
+library(bootstrap)
+library(shinyjs)
+## ui.R
+
+library(shiny)
+
+ui = shinyUI(fluidPage(
+  useShinyjs(),  # Set up shinyjs
   
-  # App title ----
+  # Application title
   titlePanel("SERRF"),
   
-  # Sidebar layout with input and output definitions ----
+  p("this is a temperal website for SERRF created by Shiny R. Contact slfan at ucdavis dot edu if more information is needed."),
+  
+  
+  p("1. Click Browse to upload dataset. 2. Click Start and wait for normalization. 3. Download result when finish. Message will be given if success or fail."),
+  
+  url <- a("Example Dataset", href="https://github.com/slfan2013/SERRF-R/raw/master/SERRF%20example%20dataset.xlsx"),
+  
+  
+  # Sidebar with a slider input for number of bins
   sidebarLayout(
-    
-    # Sidebar panel for inputs ----
     sidebarPanel(
-      
-      # Input: Select a file ----
+      sliderInput("bins",
+                  "Number of bins:",
+                  min = 1,
+                  max = 50,
+                  value = 30),
+      # checkboxInput(perform_cv, "Perform Cross-Validation", value = FALSE, width = NULL),
       fileInput("file1", "Upload Dataset",
                 multiple = FALSE,
                 accept = c("text/csv",
                            "text/comma-separated-values,text/plain",
                            ".csv")),
-      
-      # Horizontal line ----
-      tags$hr(),
-      p("Click to download ",a("Example Dataset", href = "http://shiny.rstudio.com"),". "),
-      # Horizontal line ----
-      tags$hr(),
-      
-      actionButton("go", "Start SERRFing"),
-      
-      tags$hr(),
-      
+      actionButton("go", "Start"),
       downloadButton("downloadData", label = "Download")
-      
+      # actionButton("btn", "Click me"),
+      # textInput("element", "Watch what happens to me")
     ),
     
-    # Main panel for displaying outputs ----
+    # Show a plot of the generated distribution
     mainPanel(
-      
-      
-      plotOutput("pca")
-      
+      plotOutput("distPlot"),
+      textOutput("text")
     )
-    
   )
-)
+))
 
-# Define server logic to read selected file ----
-server <- function(input, output) {
+## server.R
 
+library(shiny)
+options(shiny.maxRequestSize=300*1024^2)
+server = shinyServer(function(input, output) {
   
+  # observeEvent(input$btn, {
+  #   # Change the following line for more examples
+  #   toggleState("element")
+  # })
   
-  SERRF_dataset <- eventReactive(input$go, {
+  shinyjs::disable("downloadData")
+  
+  result_text <- eventReactive(input$go,{
+    shinyjs::disable("go")
+    showNotification("Reading Dataset...", duration = 15)
+    # cl = makeCluster(8)
+    # stopCluster(cl)
     req(input$file1)
-   
-    read_data = function (input = "C:\\Users\\FanslyFTW\\Documents\\GitHub\\app\\Datasets\\mx 426933_Morrissey_HILIC posESI_negESI_human serum_11-2018 submit_injorder.xlsx")
+    read_data = function (input = "/Users/silifan/Downloads/460812_Gamboa_negHILIC_SERRF.csv")
     {
       pacman::p_load(openxlsx, data.table)
       
@@ -183,7 +200,6 @@ server <- function(input, output) {
     }
     
     
-    
     remove_outlier = function(v){
       out = boxplot.stats(v)$out
       return(list(value = v[!v%in%out],index = which(v%in%out)))
@@ -236,41 +252,47 @@ server <- function(input, output) {
       }))
     }
     
-    # pacman::p_load(affy, parallel,ranger,caret,pcaMethods,metabolomics,ggplot2,tidyr,graphics,grDevices,Hmisc,gtools,cowplot,RColorBrewer,readr,plotly,stringr,GGally,dplyr,e1071,officer,bootstrap)
+    
     cat("<--------- Waiting User to Select Dataset File --------->\n")
     # df <- read.csv(input$file1$datapath, header = FALSE, stringsAsFactors = FALSE)
+    # input = list(file1 = list(datapath = "toBeSERRF.csv"))
     file_location = input$file1$datapath
     dta = read_data(file_location)
-    cat("<--------- Dataset is read --------->\n")
+    # cat("<--------- Dataset is read --------->\n")
     e = dta$e
     f = dta$f
     p = dta$p
     
-    # e_other = e[,!p$sampleType %in% c("sample","qc",'validate')]
-    # p_other = p[!p$sampleType %in% c("sample","qc",'validate'),]
-    # 
-    # 
-    # sample_rank = rank(dta$sample_rank[p$sampleType %in% c("sample","qc",'validate')])
-    # e = e[,p$sampleType %in% c("sample","qc",'validate')]
-    # p = p[p$sampleType %in% c("sample","qc",'validate'),]
+    
+    
     sample_rank = dta$sample_rank
     
     
     normalized_dataset = list()
     qc_RSDs = list()
+    
+    
+    qc_RSDs[["none"]] = RSD(e[,p$sampleType == 'qc'])
+    
+    
     calculation_times = list()
     if('validate'%in%p$sampleType){
       with_validate = TRUE
     }else{
       with_validate = FALSE
     }
+    showNotification(paste0("Number of QC: ",sum(p$sampleType=='qc')), duration = 15)
+    showNotification(paste0("Number of Samples: ",sum(p$sampleType=='sample')), duration = 15)
     if(with_validate){
       val_RSDs = list()
-      cat(paste0("Number of Valiate Samples: ",sum(p$sampleType=='validate')," \n"))
+      
+      showNotification(paste0("Number of Valiate Samples: ",sum(p$sampleType=='validate')), duration = 15)
+      # cat(paste0("Number of Valiate Samples: ",sum(p$sampleType=='validate')," \n"))
     }
-    cat(paste0("Number of batches: ",length(unique(p$batch))," \n"))
+    showNotification(paste0("Number of batches: ",length(unique(p$batch))," \n"), duration = 15)
+    # cat(paste0("Number of batches: ",length(unique(p$batch))," \n"))
     
-
+    
     
     start = Sys.time()
     e_norm = matrix(,nrow=nrow(e),ncol=ncol(e))
@@ -280,10 +302,7 @@ server <- function(input, output) {
     batch = factor(batch)
     num = 10
     start = Sys.time();
-    
-    cl = makeCluster(detectCores())
-    
-    
+    cl = 1
     serrfR = function(train = e[,p$sampleType == 'qc'],
                       target = e[,p$sampleType == 'sample'],
                       num = 10,
@@ -322,93 +341,123 @@ server <- function(input, output) {
       
       
       
-      pred = parSapply(cl, X = 1:nrow(all), function(j,all,batch.,ranger, sampleType., time., num,corrs_train,corrs_target){
-        
-        print(j)
-        normalized  = rep(0, ncol(all))
-        qc_train_value = list()
-        qc_predict_value = list()
-        sample_value = list()
-        sample_predict_value = list()
-        
-        for(b in 1:length(levels(batch.))){
-          current_batch = levels(batch.)[b]
-          e_current_batch = all[,batch.%in%current_batch]
-          corr_train = corrs_train[[current_batch]]
-          corr_target = corrs_target[[current_batch]]
+      # pred = parSapply(cl, X = 1:nrow(all), function(j,all,batch.,ranger, sampleType., time., num,corrs_train,corrs_target){
+      pred = matrix(nrow = nrow(all), ncol = length(sampleType.))
+      
+      withProgress(message = 'Normalization in Progress.', value = 0, {
+        for(j in 1:nrow(all)){
           
           
-          corr_train_order = order(abs(corr_train[,j]),decreasing = TRUE)
-          corr_target_order = order(abs(corr_target[,j]),decreasing = TRUE)
           
-          sel_var = c()
-          l = num
-          while(length(sel_var)<(num)){
-            sel_var = intersect(corr_train_order[1:l], corr_target_order[1:l])
-            sel_var = sel_var[!sel_var == j]
-            l = l+1
+          print(j)
+          normalized  = rep(0, ncol(all))
+          qc_train_value = list()
+          qc_predict_value = list()
+          sample_value = list()
+          sample_predict_value = list()
+          
+          for(b in 1:length(levels(batch.))){
+            current_batch = levels(batch.)[b]
+            e_current_batch = all[,batch.%in%current_batch]
+            corr_train = corrs_train[[current_batch]]
+            corr_target = corrs_target[[current_batch]]
+            
+            
+            corr_train_order = order(abs(corr_train[,j]),decreasing = TRUE)
+            corr_target_order = order(abs(corr_target[,j]),decreasing = TRUE)
+            
+            sel_var = c()
+            l = num
+            while(length(sel_var)<(num)){
+              sel_var = intersect(corr_train_order[1:l], corr_target_order[1:l])
+              sel_var = sel_var[!sel_var == j]
+              l = l+1
+            }
+            train.index_current_batch = sampleType.[batch.%in%current_batch]
+            train_data_y = scale(e_current_batch[j, train.index_current_batch=='qc'],scale=F)
+            train_data_x = apply(e_current_batch[sel_var, train.index_current_batch=='qc'],1,scale)
+            
+            if(is.null(dim(e_current_batch[sel_var, !train.index_current_batch=='qc']))){
+              test_data_x = t(scale(e_current_batch[sel_var, !train.index_current_batch=='qc']))
+            }else{
+              test_data_x = apply(e_current_batch[sel_var, !train.index_current_batch=='qc'],1,scale)
+            }
+            
+            train_NA_index  = apply(train_data_x,2,function(x){
+              sum(is.na(x))>0
+            })
+            
+            train_data_x = train_data_x[,!train_NA_index]
+            test_data_x = test_data_x[,!train_NA_index]
+            
+            if(!class(test_data_x)=="matrix"){
+              test_data_x = t(test_data_x)
+            }
+            
+            good_column = apply(train_data_x,2,function(x){sum(is.na(x))==0}) & apply(test_data_x,2,function(x){sum(is.na(x))==0})
+            train_data_x = train_data_x[,good_column]
+            test_data_x = test_data_x[,good_column]
+            if(!class(test_data_x)=="matrix"){
+              test_data_x = t(test_data_x)
+            }
+            train_data = data.frame(y = train_data_y,train_data_x )
+            colnames(train_data) = c("y", paste0("V",1:(ncol(train_data)-1)))
+            model = ranger(y~., data = train_data)
+            
+            test_data = data.frame(test_data_x)
+            colnames(test_data) = colnames(train_data)[-1]
+            
+            norm = e_current_batch[j,]
+            
+            
+            
+            norm[train.index_current_batch=='qc'] = e_current_batch[j, train.index_current_batch=='qc']/((predict(model, data = train_data)$prediction+mean(e_current_batch[j,train.index_current_batch=='qc'],na.rm=TRUE))/mean(all[j,sampleType.=='qc'],na.rm=TRUE))
+            # norm[!train.index_current_batch=='qc'] =(e_current_batch[j,!train.index_current_batch=='qc'])/((predict(model, data = test_data)$prediction + mean(e_current_batch[j,!train.index_current_batch=='qc'],na.rm=TRUE))/mean(e_current_batch[j,!train.index_current_batch=='qc'],na.rm=TRUE))
+            
+            norm[!train.index_current_batch=='qc'] =(e_current_batch[j,!train.index_current_batch=='qc'])/((predict(model,data = test_data)$predictions  + mean(e_current_batch[j, !train.index_current_batch=='qc'],na.rm=TRUE))/(median(all[j,!sampleType.=='qc'],na.rm = TRUE)))
+            norm[!train.index_current_batch=='qc'][norm[!train.index_current_batch=='qc']<0]=e_current_batch[j,!train.index_current_batch=='qc'][norm[!train.index_current_batch=='qc']<0]
+            
+            
+            # plot(p$time[batch.%in%b][!train.index_current_batch=='qc'], (e_current_batch[j,!train.index_current_batch=='qc'])/((predict(model,data = test_data)$predictions  + mean(e_current_batch[j, train.index_current_batch=='qc'],na.rm=TRUE))/(median(e_current_batch[j,!train.index_current_batch=='qc'],na.rm = TRUE))))
+            
+            
+            norm[train.index_current_batch=='qc'] = norm[train.index_current_batch=='qc']/(median(norm[train.index_current_batch=='qc'],na.rm=TRUE)/median(all[j,sampleType.=='qc'],na.rm=TRUE))
+            norm[!train.index_current_batch=='qc'] = norm[!train.index_current_batch=='qc']/(median(norm[!train.index_current_batch=='qc'],na.rm=TRUE)/median(all[j,!sampleType.=='qc'],na.rm=TRUE))
+            norm[!is.finite(norm)] = rnorm(length(norm[!is.finite(norm)]),sd = sd(norm[is.finite(norm)],na.rm=TRUE)*0.01)
+            
+            
+            
+            
+            out = boxplot.stats(norm, coef = 3)$out
+            norm[!train.index_current_batch=='qc'][norm[!train.index_current_batch=='qc']%in%out] = ((e_current_batch[j,!train.index_current_batch=='qc'])-((predict(model,data = test_data)$predictions  + mean(e_current_batch[j, !train.index_current_batch=='qc'],na.rm=TRUE))-(median(all[j,!sampleType.=='qc'],na.rm = TRUE))))[norm[!train.index_current_batch=='qc']%in%out];
+            norm[!train.index_current_batch=='qc'][norm[!train.index_current_batch=='qc']<0]=e_current_batch[j,!train.index_current_batch=='qc'][norm[!train.index_current_batch=='qc']<0]
+            
+            normalized[batch.%in%current_batch] = norm
+            # points(current_time, norm, pch = (as.numeric(factor(train.index_current_batch))-1)*19, col = "blue", cex = 0.7)
+            
+            qc_train_value[[b]] = train_data_y + mean(e_current_batch[j, train.index_current_batch=='qc'])
+            qc_predict_value[[b]] = predict(model,data = train_data)$predictions + mean(e_current_batch[j, train.index_current_batch=='qc'])
+            sample_value[[b]] = e_current_batch[j,!train.index_current_batch=='qc']
+            sample_predict_value[[b]] = predict(model,data = test_data)$predictions  + mean(e_current_batch[j, !train.index_current_batch=='qc'])
+            
           }
-          train.index_current_batch = sampleType.[batch.%in%current_batch]
-          train_data_y = scale(e_current_batch[j, train.index_current_batch=='qc'],scale=F)
-          train_data_x = apply(e_current_batch[sel_var, train.index_current_batch=='qc'],1,scale)
           
-          if(is.null(dim(e_current_batch[sel_var, !train.index_current_batch=='qc']))){
-            test_data_x = t(scale(e_current_batch[sel_var, !train.index_current_batch=='qc']))
-          }else{
-            test_data_x = apply(e_current_batch[sel_var, !train.index_current_batch=='qc'],1,scale)
-          }
-          
-          train_NA_index  = apply(train_data_x,2,function(x){
-            sum(is.na(x))>0
-          })
-          
-          train_data_x = train_data_x[,!train_NA_index]
-          test_data_x = test_data_x[,!train_NA_index]
-          
-          if(!class(test_data_x)=="matrix"){
-            test_data_x = t(test_data_x)
-          }
-          
-          good_column = apply(train_data_x,2,function(x){sum(is.na(x))==0}) & apply(test_data_x,2,function(x){sum(is.na(x))==0})
-          train_data_x = train_data_x[,good_column]
-          test_data_x = test_data_x[,good_column]
-          if(!class(test_data_x)=="matrix"){
-            test_data_x = t(test_data_x)
-          }
-          train_data = data.frame(y = train_data_y,train_data_x )
-          colnames(train_data) = c("y", paste0("V",1:(ncol(train_data)-1)))
-          model = ranger(y~., data = train_data)
-          
-          test_data = data.frame(test_data_x)
-          colnames(test_data) = colnames(train_data)[-1]
-          
-          norm = e_current_batch[j,]
-          norm[train.index_current_batch=='qc'] = e_current_batch[j, train.index_current_batch=='qc']/((predict(model, data = train_data)$prediction+mean(e_current_batch[j,train.index_current_batch=='qc'],na.rm=TRUE))/mean(e_current_batch[j,train.index_current_batch=='qc'],na.rm=TRUE))
-          
-          norm[!train.index_current_batch=='qc'] =(e_current_batch[j,!train.index_current_batch=='qc'])/((predict(model,data = test_data)$predictions  + mean(e_current_batch[j, !train.index_current_batch=='qc'],na.rm=TRUE))/(median(e_current_batch[j,!train.index_current_batch=='qc'],na.rm = TRUE)))
-          norm[train.index_current_batch=='qc'] = norm[train.index_current_batch=='qc']/(median(norm[train.index_current_batch=='qc'],na.rm=TRUE)/median(all[j,sampleType.=='qc'],na.rm=TRUE))
-          norm[!train.index_current_batch=='qc'] = norm[!train.index_current_batch=='qc']/(median(norm[!train.index_current_batch=='qc'],na.rm=TRUE)/median(all[j,!sampleType.=='qc'],na.rm=TRUE))
-          norm[!is.finite(norm)] = rnorm(length(norm[!is.finite(norm)]),sd = sd(norm[is.finite(norm)],na.rm=TRUE)*0.01)
-          normalized[batch.%in%current_batch] = norm
-          
-          
-          qc_train_value[[b]] = train_data_y + mean(e_current_batch[j, train.index_current_batch=='qc'])
-          qc_predict_value[[b]] = predict(model,data = train_data)$predictions + mean(e_current_batch[j, train.index_current_batch=='qc'])
-          sample_value[[b]] = e_current_batch[j,!train.index_current_batch=='qc']
-          sample_predict_value[[b]] = predict(model,data = test_data)$predictions  + mean(e_current_batch[j, !train.index_current_batch=='qc'])
-          
+          # return(normalized)
+          # },all,batch.,ranger, sampleType., time., num,corrs_train,corrs_target)
+          pred[j,] = normalized
+          incProgress(1/nrow(all), detail = paste("Working on compound", j,"/", nrow(all)))
         }
-        
-        return(normalized)
-      },all,batch.,ranger, sampleType., time., num,corrs_train,corrs_target)
-      normed = t(pred)
+      })
+      
+      
+      normed = pred
       
       normed_target = normed[,!sampleType.=='qc']
-      
       
       for(i in 1:nrow(normed_target)){
         normed_target[i,is.na(normed_target[i,])] = rnorm(sum(is.na(normed_target[i,])), mean = min(normed_target[i,!is.na(normed_target[i,])], na.rm = TRUE), sd = sd(normed_target[i,!is.na(normed_target[i,])])*0.1)
       }
+      
       for(i in 1:nrow(normed_target)){
         normed_target[i,normed_target[i,]<0] = runif(1) * min(normed_target[i,normed_target[i,]>0], na.rm = TRUE)
       }
@@ -420,41 +469,63 @@ server <- function(input, output) {
       for(i in 1:nrow(normed_train)){
         normed_train[i,is.na(normed_train[i,])] = rnorm(sum(is.na(normed_train[i,])), mean = min(normed_train[i,!is.na(normed_train[i,])], na.rm = TRUE), sd = sd(normed_train[i,!is.na(normed_train[i,])])*0.1)
       }
+      
       for(i in 1:nrow(normed_train)){
         normed_train[i,normed_train[i,]<0] = runif(1) * min(normed_train[i,normed_train[i,]>0], na.rm = TRUE)
       }
       return(list(normed_train=normed_train,normed_target=normed_target))
     }
     serrf_normalized = e
+    # train = e[,p$sampleType == 'qc']
+    # target = e[,p$sampleType == 'sample']
+    # batch. = factor(c(batch[p$sampleType=='qc'],batch[p$sampleType=='sample']))
+    # time. = c(time[p$sampleType=='qc'],time[p$sampleType=='sample'])
+    # sampleType. = c(p$sampleType[p$sampleType=='qc'],p$sampleType[p$sampleType=='sample'])
+    
+    
+    
+    
     serrf_normalized_modeled = serrfR(train = e[,p$sampleType == 'qc'], target = e[,p$sampleType == 'sample'], num = num,batch. = factor(c(batch[p$sampleType=='qc'],batch[p$sampleType=='sample'])),time. = c(time[p$sampleType=='qc'],time[p$sampleType=='sample']),sampleType. = c(p$sampleType[p$sampleType=='qc'],p$sampleType[p$sampleType=='sample']),cl)
+    
+    
+    
+    
+    cv = 3
+    showNotification(paste0("Performing ",cv, "-fold Cross-Validation"), duration = 15)
+    
     serrf_normalized[,p$sampleType == 'qc'] = serrf_normalized_modeled$normed_train
     serrf_normalized[,p$sampleType == 'sample'] = serrf_normalized_modeled$normed_target
-    
-    
     qc_only_data = e[,p$sampleType=='qc']
-    cv = 5
+    
+    
+    
     RSDs = list()
     if(any(table(p$batch[p$sampleType=='qc']))<7){
       ratio = 0.7
     }else{
       ratio = 0.8
     }
-    for(k in 1:cv){
-      train_index = sample(1L:sum(p$sampleType=='qc'),round(sum(p$sampleType=='qc')*ratio))
-      test_index = c(1L:sum(p$sampleType=='qc'))[!(c(1L:sum(p$sampleType=='qc'))%in%train_index)]
-      while(length(unique(batch[p$sampleType=='qc'][test_index]))<length(unique(batch))){
+    withProgress(message = paste0(cv,'-fold Cross-Validation in Progress.'), value = 0, {
+      for(k in 1:cv){
+        incProgress(1/cv, detail = paste("Working on the", k,"th cross-validation."))
         train_index = sample(1L:sum(p$sampleType=='qc'),round(sum(p$sampleType=='qc')*ratio))
         test_index = c(1L:sum(p$sampleType=='qc'))[!(c(1L:sum(p$sampleType=='qc'))%in%train_index)]
+        while(length(unique(batch[p$sampleType=='qc'][test_index]))<length(unique(batch))){
+          train_index = sample(1L:sum(p$sampleType=='qc'),round(sum(p$sampleType=='qc')*ratio))
+          test_index = c(1L:sum(p$sampleType=='qc'))[!(c(1L:sum(p$sampleType=='qc'))%in%train_index)]
+        }
+        serrf_normalized_on_cross_validate = serrfR(train = qc_only_data[,train_index], target = qc_only_data[,test_index], num = num,batch. = factor(c(batch[p$sampleType=='qc'][train_index],batch[p$sampleType=='qc'][test_index])),time. = c(time[p$sampleType=='qc'][train_index],time[p$sampleType=='qc'][test_index]),sampleType. = rep(c("qc","sample"),c(length(train_index),length(test_index))),cl)
+        
+        RSDs[[k]] = RSD(serrf_normalized_on_cross_validate$normed_target)
       }
-      serrf_normalized_on_cross_validate = serrfR(train = qc_only_data[,train_index], target = qc_only_data[,test_index], num = num,batch. = factor(c(batch[p$sampleType=='qc'][train_index],batch[p$sampleType=='qc'][test_index])),time. = c(time[p$sampleType=='qc'][train_index],time[p$sampleType=='qc'][test_index]),sampleType. = rep(c("qc","sample"),c(length(train_index),length(test_index))),cl)
-      
-      RSDs[[k]] = RSD(serrf_normalized_on_cross_validate$normed_target)
-    }
+    })
+    
     qc_RSD = apply(do.call("cbind",RSDs),1,mean)
     
     
     
     if(with_validate){
+      showNotification("Working on the validate samples ...", duration = 15)
       serrf_normalized_validate = serrfR(train = e[,p$sampleType == 'qc'], target = e[,p$sampleType == 'validate'], num = num,batch. = factor(c(batch[p$sampleType=='qc'],batch[p$sampleType=='validate'])),time. = c(time[p$sampleType=='qc'],time[p$sampleType=='validate']),sampleType. = c(p$sampleType[p$sampleType=='qc'],p$sampleType[p$sampleType=='validate']),cl)
       e_norm = e
       e_norm[,p$sampleType=='qc'] = serrf_normalized[,p$sampleType == 'qc']
@@ -462,9 +533,12 @@ server <- function(input, output) {
       e_norm[,p$sampleType=='validate'] = serrf_normalized_validate$normed_target
       
     }else{
+      
       e_norm[,p$sampleType=='qc'] = serrf_normalized[,p$sampleType == 'qc']
       e_norm[,p$sampleType=='sample'] = serrf_normalized[,p$sampleType == 'sample']
     }
+    
+    showNotification("Aggregating Normalized Compounds...", duration = 15)
     rownames(e_norm) = rownames(e)
     colnames(e_norm) = colnames(e)
     qc_RSDs[['SERRF']] = qc_RSD
@@ -476,14 +550,21 @@ server <- function(input, output) {
       cat(paste0("Average Validate Sample RSD:",signif(median(val_RSDs[['SERRF']],na.rm = TRUE),4)*100,"%.\n"))
       cat(paste0("Number of compounds less than 20% Validate Sample RSD:",sum(val_RSDs[['SERRF']]<0.2,na.rm = TRUE),".\n"))
     }
-    e_norm[,sample_rank]
+    
+    
+    e_norm = e_norm[,sample_rank]
+    
+    cat(length(normalized_dataset))
+    cat(class(normalized_dataset))
     
     normalized_dataset[["SERRF"]] = e_norm
     
     
-    stopCluster(cl)
     
+    cat(length(2))
     
+    showNotification("Preparing Result...", duration = 15)
+    # stopCluster(cl)
     normalized_dataset[['none']] = e
     
     
@@ -514,22 +595,10 @@ server <- function(input, output) {
       normalized_dataset[[methods[i]]] = e_temp
     }
     
-    # if(grepl("\\\\",file_location)){
-    #   comp = strsplit(file_location,"\\\\")[[1]]
-    # }else{
-    #   comp = strsplit(file_location,"/")[[1]]
-    # }
-    # filename = gsub("\\.csv|\\.xlsx","",comp[length(comp)])
-    # root = paste0(paste0(comp[-length(comp)],collapse = "\\"),"\\")
-    # 
-    # if(root == "\\"){
-    #   root = ''
-    # }    
-    # 
-    # dir = paste0(root,filename," - normalization result")
+    # stop("Unexpected error occurred.")
     
     
-    # dir.create(dir)
+    
     png(filename="Bar Plot and PCA plot.png", width = 1000, height = 1000 * ifelse(with_validate,3,2))
     qc_RSD_performance = sapply(qc_RSDs,median, na.rm = TRUE)
     qc_RSD_performance = sort(qc_RSD_performance,decreasing = TRUE)
@@ -552,20 +621,6 @@ server <- function(input, output) {
     
     
     
-    # 
-    # par(lty = 0)
-    # par(mar=c(5,4,4,2)*3)
-    # bp = barplot(qc_RSD_performance*100, main="QC RSD", xlab="", ylab="RSD (%)",col = qc_RSD_performance_color,width = 1,las=2,cex.axis =5, cex.names=5,cex.main = 5)
-    # text(bp[which(names(qc_RSD_performance)=='none'),1], qc_RSD_performance['none']*100, paste0(signif(qc_RSD_performance['none'],4)*100,"%"), cex = 5, pos = 3)
-    # text(bp[nrow(bp),1], qc_RSD_performance[length(qc_RSD_performance)]*100, paste0(signif(qc_RSD_performance[length(qc_RSD_performance)],4)*100,"%"), cex = 5, pos = 3)
-    # 
-    # if(with_validate){
-    #   par(lty = 0)
-    #   par(mar=c(5,4,4,2)*3)
-    #   bp = barplot(val_RSD_performance*100, main="Validate Sample RSD", xlab="", ylab="RSD (%)",col = val_RSD_performance_color,width = 1,las=2,cex.axis =5, cex.names=5,cex.main = 5)
-    #   text(bp[which(names(val_RSD_performance)=='none'),1], val_RSD_performance['none']*100, paste0(signif(val_RSD_performance['none'],4)*100,"%"), cex = 5, pos = 3)
-    #   text(bp[nrow(bp),1], val_RSD_performance[length(val_RSD_performance)]*100, paste0(signif(val_RSD_performance[length(val_RSD_performance)],4)*100,"%"), cex = 5, pos = 3)
-    # }
     pca_color = factor(p$sampleType, levels = c('sample','qc','validate'))
     dots = c(1,16,16)[as.numeric(pca_color)]
     
@@ -582,41 +637,59 @@ server <- function(input, output) {
     #legend("topright", levels(pca_color),col=c("black","red","green"),pch=c(1,16,16),box.lwd=1,  box.col="black",box.lty=1,cex=5, inset=c(-0.2,0))
     dev.off()
     # dir.create(paste0(dir,"\\normalized datasets"))
+    
+    cat(592)
     for(i in 1:length(methods)){
       if(identical(class(normalized_dataset[[methods[i]]]),"matrix")){
-        fwrite(data.table(label = f$label,normalized_dataset[[methods[i]]]),paste0("normalized datasets\normalized by - ",methods[i],'.csv'))
+        fwrite(data.table(label = f$label,normalized_dataset[[methods[i]]]),paste0("normalized by - ",methods[i],'.csv'))
       }
     }
     fwrite(data.table(label = f$label, do.call('cbind',qc_RSDs)),"QC - RSD.csv")
+    
+    
+    cat(600)
+    cat("\n")
     if(with_validate){
       fwrite(data.table(label = f$label, do.call('cbind',val_RSDs)),"Validate Samples - RSD.csv")
     }
     
+    cat(length(qc_RSDs))
+    
+    #shinyjs::enable("go")
+    
+    shinyjs::enable("downloadData")
+    
+    # RSD(e_norm[,p$sampleType=='validate'])
+    return(paste0("The average QC cross-validated RSD changed from ",signif(median(qc_RSDs[[1]]*100),2),"% to ",signif(median(qc_RSDs[[2]]*100),2),"%. Now you can click Download Result button to save results."))
     
     
-    return(getwd())
   })
-  
-  output$pca <- renderPlot({
-    hist(rnorm(100), main = paste0(SERRF_dataset()))
+  output$text <- renderText({
+    result_text()
   })
-  
   
   output$downloadData <- downloadHandler(
     filename = function() {
       "SERRF Result.zip"
     },
     content = function(fname) {
-      zip(fname, c("Bar Plot and PCA plot.png",paste0("normalized datasets\normalized by - ",methods[i],'.csv'),"Validate Samples - RSD.csv", "QC - RSD.csv"))
+      zip(fname, c("Bar Plot and PCA plot.png",paste0("normalized by - SERRF.csv"),"Validate Samples - RSD.csv", "QC - RSD.csv"))
     },
     contentType = "application/zip"
   )
   
   
+  output$distPlot <- renderPlot({
+    
+    # generate bins based on input$bins from ui.R
+    x    <- faithful[, 2]
+    bins <- seq(min(x), max(x), length.out = input$bins + 1)
+    
+    # draw the histogram with the specified number of bins
+    hist(x, breaks = bins, col = 'darkgray', border = 'white')
+    
+  })
   
-}
-
-
-
+})
 
 shinyApp(ui = ui, server = server)
