@@ -446,7 +446,7 @@ server = shinyServer(function(input, output) {
           # return(normalized)
           # },all,batch.,ranger, sampleType., time., num,corrs_train,corrs_target)
           pred[j,] = normalized
-          # incProgress(1/nrow(all), detail = paste("Working on compound", j,"/", nrow(all)))
+          incProgress(1/nrow(all), detail = paste("Working on compound", j,"/", nrow(all)))
         }
       })
       
@@ -508,7 +508,7 @@ server = shinyServer(function(input, output) {
     }
     withProgress(message = paste0(cv,'-fold Cross-Validation in Progress.'), value = 0, {
       for(k in 1:cv){
-        # incProgress(1/cv, detail = paste("Working on the", k,"th cross-validation."))
+        incProgress(1/cv, detail = paste("Working on the", k,"th cross-validation."))
         train_index = sample(1L:sum(p$sampleType=='qc'),round(sum(p$sampleType=='qc')*ratio))
         test_index = c(1L:sum(p$sampleType=='qc'))[!(c(1L:sum(p$sampleType=='qc'))%in%train_index)]
         while(length(unique(batch[p$sampleType=='qc'][test_index]))<length(unique(batch))){
