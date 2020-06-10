@@ -67,7 +67,7 @@ server = shinyServer(function(input, output) {
   
   result_text <- eventReactive(input$go,{
     shinyjs::disable("go")
-    showNotification("Reading Dataset...", duration = 15)
+    showNotification("Reading Dataset...", duration = 15000)
     # cl = makeCluster(8)
     # stopCluster(cl)
     # input = list(file1 = "SERRF example dataset")
@@ -282,15 +282,15 @@ server = shinyServer(function(input, output) {
     }else{
       with_validate = FALSE
     }
-    showNotification(paste0("Number of QC: ",sum(p$sampleType=='qc')), duration = 15)
-    showNotification(paste0("Number of Samples: ",sum(p$sampleType=='sample')), duration = 15)
+    showNotification(paste0("Number of QC: ",sum(p$sampleType=='qc')), duration = 15000)
+    showNotification(paste0("Number of Samples: ",sum(p$sampleType=='sample')), duration = 15000)
     if(with_validate){
       val_RSDs = list()
       
-      showNotification(paste0("Number of Valiate Samples: ",sum(p$sampleType=='validate')), duration = 15)
+      showNotification(paste0("Number of Valiate Samples: ",sum(p$sampleType=='validate')), duration = 15000)
       # cat(paste0("Number of Valiate Samples: ",sum(p$sampleType=='validate')," \n"))
     }
-    showNotification(paste0("Number of batches: ",length(unique(p$batch))," \n"), duration = 15)
+    showNotification(paste0("Number of batches: ",length(unique(p$batch))," \n"), duration = 15000)
     # cat(paste0("Number of batches: ",length(unique(p$batch))," \n"))
     
     
@@ -492,7 +492,7 @@ server = shinyServer(function(input, output) {
     
     
     cv = 3
-    showNotification(paste0("Performing ",cv, "-fold Cross-Validation"), duration = 15)
+    showNotification(paste0("Performing ",cv, "-fold Cross-Validation"), duration = 15000)
     
     serrf_normalized[,p$sampleType == 'qc'] = serrf_normalized_modeled$normed_train
     serrf_normalized[,p$sampleType == 'sample'] = serrf_normalized_modeled$normed_target
@@ -526,7 +526,7 @@ server = shinyServer(function(input, output) {
     
     
     if(with_validate){
-      showNotification("Working on the validate samples ...", duration = 15)
+      showNotification("Working on the validate samples ...", duration = 15000)
       serrf_normalized_validate = serrfR(train = e[,p$sampleType == 'qc'], target = e[,p$sampleType == 'validate'], num = num,batch. = factor(c(batch[p$sampleType=='qc'],batch[p$sampleType=='validate'])),time. = c(time[p$sampleType=='qc'],time[p$sampleType=='validate']),sampleType. = c(p$sampleType[p$sampleType=='qc'],p$sampleType[p$sampleType=='validate']),cl)
       e_norm = e
       e_norm[,p$sampleType=='qc'] = serrf_normalized[,p$sampleType == 'qc']
@@ -539,7 +539,7 @@ server = shinyServer(function(input, output) {
       e_norm[,p$sampleType=='sample'] = serrf_normalized[,p$sampleType == 'sample']
     }
     
-    showNotification("Aggregating Normalized Compounds...", duration = 15)
+    showNotification("Aggregating Normalized Compounds...", duration = 15000)
     rownames(e_norm) = rownames(e)
     colnames(e_norm) = colnames(e)
     qc_RSDs[['SERRF']] = qc_RSD
@@ -564,7 +564,7 @@ server = shinyServer(function(input, output) {
     
     cat(length(2))
     
-    showNotification("Preparing Result...", duration = 15)
+    showNotification("Preparing Result...", duration = 15000)
     # stopCluster(cl)
     normalized_dataset[['none']] = e
     
