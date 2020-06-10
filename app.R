@@ -70,6 +70,7 @@ server = shinyServer(function(input, output) {
     showNotification("Reading Dataset...", duration = 15)
     # cl = makeCluster(8)
     # stopCluster(cl)
+    # input = list(file1 = "SERRF example dataset")
     req(input$file1)
     read_data = function (input = "/Users/silifan/Downloads/460812_Gamboa_negHILIC_SERRF.csv")
     {
@@ -255,7 +256,7 @@ server = shinyServer(function(input, output) {
     
     cat("<--------- Waiting User to Select Dataset File --------->\n")
     # df <- read.csv(input$file1$datapath, header = FALSE, stringsAsFactors = FALSE)
-    # input = list(file1 = list(datapath = "toBeSERRF.csv"))
+    # input = list(file1 = list(datapath = "SERRF example dataset.xlsx"))
     file_location = input$file1$datapath
     dta = read_data(file_location)
     # cat("<--------- Dataset is read --------->\n")
@@ -445,7 +446,7 @@ server = shinyServer(function(input, output) {
           # return(normalized)
           # },all,batch.,ranger, sampleType., time., num,corrs_train,corrs_target)
           pred[j,] = normalized
-          incProgress(1/nrow(all), detail = paste("Working on compound", j,"/", nrow(all)))
+          # incProgress(1/nrow(all), detail = paste("Working on compound", j,"/", nrow(all)))
         }
       })
       
@@ -507,7 +508,7 @@ server = shinyServer(function(input, output) {
     }
     withProgress(message = paste0(cv,'-fold Cross-Validation in Progress.'), value = 0, {
       for(k in 1:cv){
-        incProgress(1/cv, detail = paste("Working on the", k,"th cross-validation."))
+        # incProgress(1/cv, detail = paste("Working on the", k,"th cross-validation."))
         train_index = sample(1L:sum(p$sampleType=='qc'),round(sum(p$sampleType=='qc')*ratio))
         test_index = c(1L:sum(p$sampleType=='qc'))[!(c(1L:sum(p$sampleType=='qc'))%in%train_index)]
         while(length(unique(batch[p$sampleType=='qc'][test_index]))<length(unique(batch))){
