@@ -14,7 +14,7 @@ ui = shinyUI(fluidPage(
   useShinyjs(),  # Set up shinyjs
   
   # Application title
-  titlePanel("SERRF"),
+  titlePanel("SERRF working"),
   
   p("this is a temperal website for SERRF created by Shiny R. Contact slfan at ucdavis dot edu if more information is needed."),
   
