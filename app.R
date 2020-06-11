@@ -661,7 +661,9 @@ server = shinyServer(function(input, output) {
     shinyjs::enable("downloadData")
     
     # RSD(e_norm[,p$sampleType=='validate'])
-    return(paste0("The average QC cross-validated RSD changed from ",signif(median(qc_RSDs[[1]]*100),2),"% to ",signif(median(qc_RSDs[[2]]*100),2),"%. Now you can click Download Result button to save results."))
+    showNotification("Does this show? If shown, then error occurs before Aggregating Normalized Compounds...", duration = 15000)
+    # return(paste0("The average QC cross-validated RSD changed from ",signif(median(qc_RSDs[[1]]*100),2),"% to ",signif(median(qc_RSDs[[2]]*100),2),"%. Now you can click Download Result button to save results."))
+    return("TRUE")
     
     
   })
