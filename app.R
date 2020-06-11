@@ -72,7 +72,9 @@ server = shinyServer(function(input, output) {
     # stopCluster(cl)
     # input = list(file1 = "SERRF example dataset")
     req(input$file1)
-    read_data = function (input = "/Users/silifan/Downloads/460812_Gamboa_negHILIC_SERRF.csv")
+    read_data = function (input
+                          # = "/Users/silifan/Downloads/460812_Gamboa_negHILIC_SERRF.csv"
+                          )
     {
       pacman::p_load(openxlsx, data.table)
       
