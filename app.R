@@ -16,7 +16,7 @@ ui = shinyUI(fluidPage(
   # Application title
   titlePanel("SERRF"),
   
-  em("06/10/2020"),
+  em("07/15/2020"),
   
   p("this is a temperal website for SERRF created by Shiny R. Contact slfan at ucdavis dot edu if more information is needed."),
   
