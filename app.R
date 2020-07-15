@@ -29,11 +29,11 @@ ui = shinyUI(fluidPage(
   # Sidebar with a slider input for number of bins
   sidebarLayout(
     sidebarPanel(
-      sliderInput("bins",
-                  "Number of bins:",
-                  min = 1,
-                  max = 50,
-                  value = 30),
+      #sliderInput("bins",
+                  #"Number of bins:",
+                  #min = 1,
+                  #max = 50,
+                  #value = 30),
       # checkboxInput(perform_cv, "Perform Cross-Validation", value = FALSE, width = NULL),
       fileInput("file1", "Upload Dataset",
                 multiple = FALSE,
@@ -48,7 +48,7 @@ ui = shinyUI(fluidPage(
     
     # Show a plot of the generated distribution
     mainPanel(
-      plotOutput("distPlot"),
+      #plotOutput("distPlot"),
       textOutput("text")
     )
   )
@@ -665,7 +665,7 @@ server = shinyServer(function(input, output) {
     shinyjs::enable("downloadData")
     
     # RSD(e_norm[,p$sampleType=='validate'])
-    showNotification("Does this show? If shown, then error occurs before Aggregating Normalized Compounds...", duration = 15000)
+    # showNotification("Does this show? If shown, then error occurs before Aggregating Normalized Compounds...", duration = 15000)
     # return(paste0("The average QC cross-validated RSD changed from ",signif(median(qc_RSDs[[1]]*100),2),"% to ",signif(median(qc_RSDs[[2]]*100),2),"%. Now you can click Download Result button to save results."))
     return("TRUE")
     
@@ -686,16 +686,7 @@ server = shinyServer(function(input, output) {
   )
   
   
-  output$distPlot <- renderPlot({
-    
-    # generate bins based on input$bins from ui.R
-    x    <- faithful[, 2]
-    bins <- seq(min(x), max(x), length.out = input$bins + 1)
-    
-    # draw the histogram with the specified number of bins
-    hist(x, breaks = bins, col = 'darkgray', border = 'white')
-    
-  })
+
   
 })
 
