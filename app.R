@@ -16,6 +16,8 @@ ui = shinyUI(fluidPage(
   # Application title
   titlePanel("SERRF"),
   
+  em("07/15/2020"),
+  
   p("this is a temperal website for SERRF created by Shiny R. Contact slfan at ucdavis dot edu if more information is needed."),
   
   
@@ -27,11 +29,11 @@ ui = shinyUI(fluidPage(
   # Sidebar with a slider input for number of bins
   sidebarLayout(
     sidebarPanel(
-      sliderInput("bins",
-                  "Number of bins:",
-                  min = 1,
-                  max = 50,
-                  value = 30),
+      #sliderInput("bins",
+                  #"Number of bins:",
+                  #min = 1,
+                  #max = 50,
+                  #value = 30),
       # checkboxInput(perform_cv, "Perform Cross-Validation", value = FALSE, width = NULL),
       fileInput("file1", "Upload Dataset",
                 multiple = FALSE,
@@ -46,7 +48,7 @@ ui = shinyUI(fluidPage(
     
     # Show a plot of the generated distribution
     mainPanel(
-      plotOutput("distPlot"),
+      #plotOutput("distPlot"),
       textOutput("text")
     )
   )
@@ -67,11 +69,14 @@ server = shinyServer(function(input, output) {
   
   result_text <- eventReactive(input$go,{
     shinyjs::disable("go")
-    showNotification("Reading Dataset...", duration = 15)
+    showNotification("Reading Dataset...", duration = 15000)
     # cl = makeCluster(8)
     # stopCluster(cl)
+    # input = list(file1 = "SERRF example dataset")
     req(input$file1)
-    read_data = function (input = "/Users/silifan/Downloads/460812_Gamboa_negHILIC_SERRF.csv")
+    read_data = function (input
+                          # = "/Users/silifan/Downloads/460812_Gamboa_negHILIC_SERRF.csv"
+                          )
     {
       pacman::p_load(openxlsx, data.table)
       
@@ -255,7 +260,7 @@ server = shinyServer(function(input, output) {
     
     cat("<--------- Waiting User to Select Dataset File --------->\n")
     # df <- read.csv(input$file1$datapath, header = FALSE, stringsAsFactors = FALSE)
-    # input = list(file1 = list(datapath = "toBeSERRF.csv"))
+    # input = list(file1 = list(datapath = "SERRF example dataset.xlsx"))
     file_location = input$file1$datapath
     dta = read_data(file_location)
     # cat("<--------- Dataset is read --------->\n")
@@ -281,15 +286,15 @@ server = shinyServer(function(input, output) {
     }else{
       with_validate = FALSE
     }
-    showNotification(paste0("Number of QC: ",sum(p$sampleType=='qc')), duration = 15)
-    showNotification(paste0("Number of Samples: ",sum(p$sampleType=='sample')), duration = 15)
+    showNotification(paste0("Number of QC: ",sum(p$sampleType=='qc')), duration = 15000)
+    showNotification(paste0("Number of Samples: ",sum(p$sampleType=='sample')), duration = 15000)
     if(with_validate){
       val_RSDs = list()
       
-      showNotification(paste0("Number of Valiate Samples: ",sum(p$sampleType=='validate')), duration = 15)
+      showNotification(paste0("Number of Valiate Samples: ",sum(p$sampleType=='validate')), duration = 15000)
       # cat(paste0("Number of Valiate Samples: ",sum(p$sampleType=='validate')," \n"))
     }
-    showNotification(paste0("Number of batches: ",length(unique(p$batch))," \n"), duration = 15)
+    showNotification(paste0("Number of batches: ",length(unique(p$batch))," \n"), duration = 15000)
     # cat(paste0("Number of batches: ",length(unique(p$batch))," \n"))
     
     
@@ -491,7 +496,7 @@ server = shinyServer(function(input, output) {
     
     
     cv = 3
-    showNotification(paste0("Performing ",cv, "-fold Cross-Validation"), duration = 15)
+    showNotification(paste0("Performing ",cv, "-fold Cross-Validation"), duration = 15000)
     
     serrf_normalized[,p$sampleType == 'qc'] = serrf_normalized_modeled$normed_train
     serrf_normalized[,p$sampleType == 'sample'] = serrf_normalized_modeled$normed_target
@@ -525,7 +530,7 @@ server = shinyServer(function(input, output) {
     
     
     if(with_validate){
-      showNotification("Working on the validate samples ...", duration = 15)
+      showNotification("Working on the validate samples ...", duration = 15000)
       serrf_normalized_validate = serrfR(train = e[,p$sampleType == 'qc'], target = e[,p$sampleType == 'validate'], num = num,batch. = factor(c(batch[p$sampleType=='qc'],batch[p$sampleType=='validate'])),time. = c(time[p$sampleType=='qc'],time[p$sampleType=='validate']),sampleType. = c(p$sampleType[p$sampleType=='qc'],p$sampleType[p$sampleType=='validate']),cl)
       e_norm = e
       e_norm[,p$sampleType=='qc'] = serrf_normalized[,p$sampleType == 'qc']
@@ -538,7 +543,7 @@ server = shinyServer(function(input, output) {
       e_norm[,p$sampleType=='sample'] = serrf_normalized[,p$sampleType == 'sample']
     }
     
-    showNotification("Aggregating Normalized Compounds...", duration = 15)
+    showNotification("Aggregating Normalized Compounds...", duration = 15000)
     rownames(e_norm) = rownames(e)
     colnames(e_norm) = colnames(e)
     qc_RSDs[['SERRF']] = qc_RSD
@@ -563,7 +568,7 @@ server = shinyServer(function(input, output) {
     
     cat(length(2))
     
-    showNotification("Preparing Result...", duration = 15)
+    showNotification("Preparing Result...", duration = 15000)
     # stopCluster(cl)
     normalized_dataset[['none']] = e
     
@@ -660,7 +665,9 @@ server = shinyServer(function(input, output) {
     shinyjs::enable("downloadData")
     
     # RSD(e_norm[,p$sampleType=='validate'])
-    return(paste0("The average QC cross-validated RSD changed from ",signif(median(qc_RSDs[[1]]*100),2),"% to ",signif(median(qc_RSDs[[2]]*100),2),"%. Now you can click Download Result button to save results."))
+    # showNotification("Does this show? If shown, then error occurs before Aggregating Normalized Compounds...", duration = 15000)
+    # return(paste0("The average QC cross-validated RSD changed from ",signif(median(qc_RSDs[[1]]*100),2),"% to ",signif(median(qc_RSDs[[2]]*100),2),"%. Now you can click Download Result button to save results."))
+    return("TRUE")
     
     
   })
@@ -679,16 +686,7 @@ server = shinyServer(function(input, output) {
   )
   
   
-  output$distPlot <- renderPlot({
-    
-    # generate bins based on input$bins from ui.R
-    x    <- faithful[, 2]
-    bins <- seq(min(x), max(x), length.out = input$bins + 1)
-    
-    # draw the histogram with the specified number of bins
-    hist(x, breaks = bins, col = 'darkgray', border = 'white')
-    
-  })
+
   
 })
 
