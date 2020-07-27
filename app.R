@@ -260,7 +260,7 @@ server = shinyServer(function(input, output) {
     
     cat("<--------- Waiting User to Select Dataset File --------->\n")
     # df <- read.csv(input$file1$datapath, header = FALSE, stringsAsFactors = FALSE)
-    # input = list(file1 = list(datapath = "SERRF example dataset.xlsx"))
+    # input = list(file1 = list(datapath = "C:\\Users\\slfan\\Downloads\\SUGAR SERRF normalization QC(B) 2.csv"))
     file_location = input$file1$datapath
     dta = read_data(file_location)
     # cat("<--------- Dataset is read --------->\n")
