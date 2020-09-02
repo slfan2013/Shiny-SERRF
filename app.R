@@ -16,14 +16,14 @@ ui = shinyUI(fluidPage(
   # Application title
   titlePanel("SERRF"),
   
-  em("07/15/2020"),
+  em("09/01/2020"),
   
   p("this is a temperal website for SERRF created by Shiny R. Contact slfan at ucdavis dot edu if more information is needed."),
   
   
   p("1. Click Browse to upload dataset. 2. Click Start and wait for normalization. 3. Download result when finish. Message will be given if success or fail."),
   
-  url <- a("Example Dataset", href="https://github.com/slfan2013/SERRF-R/raw/master/SERRF%20example%20dataset.xlsx"),
+  url <- a("Example Dataset", href="https://github.com/slfan2013/Shiny-SERRF/raw/master/SERRF%20example%20dataset.xlsx"),
   
   
   # Sidebar with a slider input for number of bins
@@ -39,7 +39,7 @@ ui = shinyUI(fluidPage(
                 multiple = FALSE,
                 accept = c("text/csv",
                            "text/comma-separated-values,text/plain",
-                           ".csv")),
+                           ".csv",".xlsx")),
       actionButton("go", "Start"),
       downloadButton("downloadData", label = "Download")
       # actionButton("btn", "Click me"),
@@ -260,32 +260,33 @@ server = shinyServer(function(input, output) {
     
     cat("<--------- Waiting User to Select Dataset File --------->\n")
     # df <- read.csv(input$file1$datapath, header = FALSE, stringsAsFactors = FALSE)
-    # input = list(file1 = list(datapath = "SERRF example dataset.xlsx"))
+    # input = list(file1 = list(datapath = "SERRF example dataset - Copy.xlsx"))
     file_location = input$file1$datapath
     dta = read_data(file_location)
     # cat("<--------- Dataset is read --------->\n")
     e = dta$e
     f = dta$f
     p = dta$p
-    
-    
-    
-    sample_rank = dta$sample_rank
-    
-    
-    normalized_dataset = list()
-    qc_RSDs = list()
-    
-    
-    qc_RSDs[["none"]] = RSD(e[,p$sampleType == 'qc'])
-    
-    
-    calculation_times = list()
     if('validate'%in%p$sampleType){
       with_validate = TRUE
     }else{
       with_validate = FALSE
     }
+    
+    if(e[1,1] == 167879){# example
+      
+      is_example = TRUE
+      
+    }else{
+      
+      is_example = FALSE
+    
+    }
+    normalized_dataset = list()
+    qc_RSDs = list()
+    methods = "SERRF"
+    print(is_example)
+    
     showNotification(paste0("Number of QC: ",sum(p$sampleType=='qc')), duration = 15000)
     showNotification(paste0("Number of Samples: ",sum(p$sampleType=='sample')), duration = 15000)
     if(with_validate){
@@ -295,10 +296,21 @@ server = shinyServer(function(input, output) {
       # cat(paste0("Number of Valiate Samples: ",sum(p$sampleType=='validate')," \n"))
     }
     showNotification(paste0("Number of batches: ",length(unique(p$batch))," \n"), duration = 15000)
+    
+    if(!is_example){
+    sample_rank = dta$sample_rank
+    
+    
+    
+    
+    
+    qc_RSDs[["none"]] = RSD(e[,p$sampleType == 'qc'])
+    
+    
+    calculation_times = list()
+    
+    
     # cat(paste0("Number of batches: ",length(unique(p$batch))," \n"))
-    
-    
-    
     start = Sys.time()
     e_norm = matrix(,nrow=nrow(e),ncol=ncol(e))
     QC.index = p[["sampleType"]]
@@ -414,8 +426,6 @@ server = shinyServer(function(input, output) {
             
             norm = e_current_batch[j,]
             
-            
-            
             norm[train.index_current_batch=='qc'] = e_current_batch[j, train.index_current_batch=='qc']/((predict(model, data = train_data)$prediction+mean(e_current_batch[j,train.index_current_batch=='qc'],na.rm=TRUE))/mean(all[j,sampleType.=='qc'],na.rm=TRUE))
             # norm[!train.index_current_batch=='qc'] =(e_current_batch[j,!train.index_current_batch=='qc'])/((predict(model, data = test_data)$prediction + mean(e_current_batch[j,!train.index_current_batch=='qc'],na.rm=TRUE))/mean(e_current_batch[j,!train.index_current_batch=='qc'],na.rm=TRUE))
             
@@ -429,9 +439,6 @@ server = shinyServer(function(input, output) {
             norm[train.index_current_batch=='qc'] = norm[train.index_current_batch=='qc']/(median(norm[train.index_current_batch=='qc'],na.rm=TRUE)/median(all[j,sampleType.=='qc'],na.rm=TRUE))
             norm[!train.index_current_batch=='qc'] = norm[!train.index_current_batch=='qc']/(median(norm[!train.index_current_batch=='qc'],na.rm=TRUE)/median(all[j,!sampleType.=='qc'],na.rm=TRUE))
             norm[!is.finite(norm)] = rnorm(length(norm[!is.finite(norm)]),sd = sd(norm[is.finite(norm)],na.rm=TRUE)*0.01)
-            
-            
-            
             
             out = boxplot.stats(norm, coef = 3)$out
             norm[!train.index_current_batch=='qc'][norm[!train.index_current_batch=='qc']%in%out] = ((e_current_batch[j,!train.index_current_batch=='qc'])-((predict(model,data = test_data)$predictions  + mean(e_current_batch[j, !train.index_current_batch=='qc'],na.rm=TRUE))-(median(all[j,!sampleType.=='qc'],na.rm = TRUE))))[norm[!train.index_current_batch=='qc']%in%out];
@@ -505,7 +512,7 @@ server = shinyServer(function(input, output) {
     
     
     RSDs = list()
-    if(any(table(p$batch[p$sampleType=='qc']))<7){
+    if(any(table(p$batch[p$sampleType=='qc'])<7)){
       ratio = 0.7
     }else{
       ratio = 0.8
@@ -551,6 +558,8 @@ server = shinyServer(function(input, output) {
     cat(paste0("Average QC RSD:",signif(median(qc_RSDs[['SERRF']],na.rm = TRUE),4)*100,"%.\n"))
     cat(paste0("Number of compounds less than 20% QC RSD:",sum(qc_RSDs[['SERRF']]<0.2,na.rm = TRUE),".\n"))
     if(with_validate){
+      val_RSDs = RSD(e[,p$sampleType == 'validate'])
+      
       val_RSDs[['SERRF']] = RSD(e_norm[,p$sampleType=='validate'])
       cat(paste0("Average Validate Sample RSD:",signif(median(val_RSDs[['SERRF']],na.rm = TRUE),4)*100,"%.\n"))
       cat(paste0("Number of compounds less than 20% Validate Sample RSD:",sum(val_RSDs[['SERRF']]<0.2,na.rm = TRUE),".\n"))
@@ -590,7 +599,7 @@ server = shinyServer(function(input, output) {
       normalized_dataset[['none']] = e_temp
       
     }
-    methods = "SERRF"
+    
     for(i in 1:length(methods)){
       # normalized_dataset[[methods[i]]] = cbind(normalized_dataset[[methods[i]]], e_other)
       e_temp = cbind(normalized_dataset[[methods[i]]], dta$bad_data_matrix)
@@ -601,10 +610,38 @@ server = shinyServer(function(input, output) {
     }
     
     # stop("Unexpected error occurred.")
+    }else{
+      
+      if(nrow(p) == 1299){
+        
+        
+        example_normed = data.matrix(fread("normalized by - SERRF - with validate.csv")[,-1])
+        
+        
+        
+        
+        
+      }else{
+        
+        example_normed = data.matrix(fread("normalized by - SERRF - with validate.csv")[,-1])
+        
+      }
+      
+      normalized_dataset[['SERRF']] = example_normed
+      
+      qc_RSDs = fread("RSDs - with validate.csv")[,-c(1,4)]
+      if(with_validate){
+        val_RSDs = fread("RSDs - with validate.csv")[,4]
+      }
+      
+      
+      
+    }
     
     
     
-    png(filename="Bar Plot and PCA plot.png", width = 1000, height = 1000 * ifelse(with_validate,3,2))
+    
+    png(filename="PCA plot.png", width = 1000, height = 1000 * ifelse(with_validate,2,2))
     qc_RSD_performance = sapply(qc_RSDs,median, na.rm = TRUE)
     qc_RSD_performance = sort(qc_RSD_performance,decreasing = TRUE)
     qc_RSD_performance_color = rep("grey",length(qc_RSD_performance))
@@ -619,11 +656,10 @@ server = shinyServer(function(input, output) {
       val_RSD_performance_color[length(val_RSD_performance_color)-1] = "red"
       val_RSD_performance_color[length(val_RSD_performance_color)] = "#ffbf00"
       val_RSD_performance_color[names(val_RSD_performance)=='none'] = 'black'
-      layout(matrix(c(1,1,2,2,3,4), 3, 2, byrow = TRUE))
+      layout(matrix(c(1,1,2,2), 2, 2, byrow = TRUE))
     }else{
-      layout(matrix(c(1,1,2,3), 2, 2, byrow = TRUE))
+      layout(matrix(c(1,1,2,2), 2, 2, byrow = TRUE))
     }
-    
     
     
     pca_color = factor(p$sampleType, levels = c('sample','qc','validate'))
@@ -649,25 +685,28 @@ server = shinyServer(function(input, output) {
         fwrite(data.table(label = f$label,normalized_dataset[[methods[i]]]),paste0("normalized by - ",methods[i],'.csv'))
       }
     }
-    fwrite(data.table(label = f$label, do.call('cbind',qc_RSDs)),"QC - RSD.csv")
+    RSDs = data.table(label = f$label, do.call('cbind',qc_RSDs))
+    fwrite(RSDs,"RSDs.csv")
     
     
     cat(600)
     cat("\n")
+    print(with_validate)
     if(with_validate){
-      fwrite(data.table(label = f$label, do.call('cbind',val_RSDs)),"Validate Samples - RSD.csv")
+      RSDs = cbind(RSDs, do.call("cbind",val_RSDs))
+      fwrite(RSDs,"RSDs.csv")
     }
     
     cat(length(qc_RSDs))
     
     #shinyjs::enable("go")
-    
+    showNotification("Ready to Download. Click Download Button.", duration = 15000)
     shinyjs::enable("downloadData")
     
     # RSD(e_norm[,p$sampleType=='validate'])
     # showNotification("Does this show? If shown, then error occurs before Aggregating Normalized Compounds...", duration = 15000)
     # return(paste0("The average QC cross-validated RSD changed from ",signif(median(qc_RSDs[[1]]*100),2),"% to ",signif(median(qc_RSDs[[2]]*100),2),"%. Now you can click Download Result button to save results."))
-    return("TRUE")
+    return("Finished!")
     
     
   })
@@ -680,7 +719,7 @@ server = shinyServer(function(input, output) {
       "SERRF Result.zip"
     },
     content = function(fname) {
-      zip(fname, c("Bar Plot and PCA plot.png",paste0("normalized by - SERRF.csv"),"Validate Samples - RSD.csv", "QC - RSD.csv"))
+      zip(fname, c("PCA plot.png",paste0("normalized by - SERRF.csv"),"RSDs.csv"))
     },
     contentType = "application/zip"
   )
