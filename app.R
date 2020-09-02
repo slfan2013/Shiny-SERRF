@@ -260,7 +260,7 @@ server = shinyServer(function(input, output) {
     
     cat("<--------- Waiting User to Select Dataset File --------->\n")
     # df <- read.csv(input$file1$datapath, header = FALSE, stringsAsFactors = FALSE)
-    # input = list(file1 = list(datapath = "C:\\Users\\slfan\\Downloads\\SUGAR SERRF normalization QC(B) 2.csv"))
+    # input = list(file1 = list(datapath = "SERRF example dataset.xlsx"))
     file_location = input$file1$datapath
     dta = read_data(file_location)
     # cat("<--------- Dataset is read --------->\n")
@@ -612,7 +612,7 @@ server = shinyServer(function(input, output) {
     qc_RSD_performance_color[length(qc_RSD_performance_color)] = "#ffbf00"
     qc_RSD_performance_color[names(qc_RSD_performance)=='none'] = 'black'
     if(with_validate){
-      val_RSDs
+      
       val_RSD_performance = sapply(val_RSDs,median, na.rm = TRUE)
       val_RSD_performance = sort(val_RSD_performance,decreasing = TRUE)
       val_RSD_performance_color = rep("grey",length(val_RSD_performance))
@@ -632,7 +632,7 @@ server = shinyServer(function(input, output) {
     sds = apply(e,1,sd)
     
     pca_before = prcomp(t(e[!sds==0,]),scale. = TRUE)
-    par(mar=c(4,2,4,2)*3)
+    # par(mar=c(4,2,4,2)*3)
     plot(pca_before$x[,1],pca_before$x[,2], col = pca_color,main = 'Before',xlab='raw data',cex.lab=5,yaxt='n', cex.axis=5, cex.main=5, cex.sub=5,ylab="", xaxt='n',cex = 5,pch = dots)
     
     
