@@ -637,7 +637,7 @@ server = shinyServer(function(input, output) {
       withProgress(message = 'Normalization in Progress.', value = 0, {
         for(j in 1:nrow(example_normed)){
           
-          Sys.sleep(1)
+          Sys.sleep(runif(1,min=0.9,max=1.2))
           incProgress(1/nrow(example_normed), detail = paste("Working on compound", j,"/", nrow(example_normed)))
           
         }
