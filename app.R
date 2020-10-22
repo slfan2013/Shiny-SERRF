@@ -72,10 +72,10 @@ server = shinyServer(function(input, output) {
     showNotification("Reading Dataset...", duration = 15000)
     # cl = makeCluster(8)
     # stopCluster(cl)
-    # input = list(file1 = "SERRF example dataset")
+    # input = list(file1 = "/Users/silifan/Downloads/SERFF_input_Test.csv")
     req(input$file1)
     read_data = function (input
-                          # = "/Users/silifan/Downloads/460812_Gamboa_negHILIC_SERRF.csv"
+                          # = "/Users/silifan/Downloads/SERFF_input_Test.csv"
                           )
     {
       pacman::p_load(openxlsx, data.table)
@@ -260,7 +260,7 @@ server = shinyServer(function(input, output) {
     
     cat("<--------- Waiting User to Select Dataset File --------->\n")
     # df <- read.csv(input$file1$datapath, header = FALSE, stringsAsFactors = FALSE)
-    # input = list(file1 = list(datapath = "SERRF example dataset - with validate.xlsx"))
+    # input = list(file1 = list(datapath = "/Users/silifan/Downloads/SERFF_input_Test.csv"))
     file_location = input$file1$datapath
     dta = read_data(file_location)
     # cat("<--------- Dataset is read --------->\n")
@@ -304,7 +304,7 @@ server = shinyServer(function(input, output) {
     
     
     
-    qc_RSDs[["none"]] = RSD(e[,p$sampleType == 'qc'])
+    qc_RSDs[["raw"]] = RSD(e[,p$sampleType == 'qc'])
     
     
     calculation_times = list()
@@ -558,7 +558,9 @@ server = shinyServer(function(input, output) {
     cat(paste0("Average QC RSD:",signif(median(qc_RSDs[['SERRF']],na.rm = TRUE),4)*100,"%.\n"))
     cat(paste0("Number of compounds less than 20% QC RSD:",sum(qc_RSDs[['SERRF']]<0.2,na.rm = TRUE),".\n"))
     if(with_validate){
-      val_RSDs = RSD(e[,p$sampleType == 'validate'])
+      val_RSDs = list()
+      
+      val_RSDs[['raw']] = RSD(e[,p$sampleType == 'validate'])
       
       val_RSDs[['SERRF']] = RSD(e_norm[,p$sampleType=='validate'])
       cat(paste0("Average Validate Sample RSD:",signif(median(val_RSDs[['SERRF']],na.rm = TRUE),4)*100,"%.\n"))
@@ -579,7 +581,7 @@ server = shinyServer(function(input, output) {
     
     showNotification("Preparing Result...", duration = 15000)
     # stopCluster(cl)
-    normalized_dataset[['none']] = e
+    normalized_dataset[['raw']] = e
     
     
     sample_rank = dta$sample_rank
@@ -591,12 +593,12 @@ server = shinyServer(function(input, output) {
     p = p_temp
     # e = cbind(e, e_other)
     
-    if(ncol(normalized_dataset[['none']])==ncol(e)){
-      # normalized_dataset[['none']] =  cbind(normalized_dataset[['none']], e_other)
-      e_temp = cbind(normalized_dataset[['none']], dta$bad_data_matrix)
-      e_temp[,dta$good_index] = normalized_dataset[['none']]
+    if(ncol(normalized_dataset[['raw']])==ncol(e)){
+      # normalized_dataset[['raw']] =  cbind(normalized_dataset[['raw']], e_other)
+      e_temp = cbind(normalized_dataset[['raw']], dta$bad_data_matrix)
+      e_temp[,dta$good_index] = normalized_dataset[['raw']]
       e_temp[,dta$bad_index] = dta$bad_data_matrix
-      normalized_dataset[['none']] = e_temp
+      normalized_dataset[['raw']] = e_temp
       
     }
     
@@ -656,7 +658,7 @@ server = shinyServer(function(input, output) {
     qc_RSD_performance_color = rep("grey",length(qc_RSD_performance))
     qc_RSD_performance_color[length(qc_RSD_performance_color)-1] = "red"
     qc_RSD_performance_color[length(qc_RSD_performance_color)] = "#ffbf00"
-    qc_RSD_performance_color[names(qc_RSD_performance)=='none'] = 'black'
+    qc_RSD_performance_color[names(qc_RSD_performance)=='raw'] = 'black'
     if(with_validate){
       
       val_RSD_performance = sapply(val_RSDs,median, na.rm = TRUE)
@@ -664,7 +666,7 @@ server = shinyServer(function(input, output) {
       val_RSD_performance_color = rep("grey",length(val_RSD_performance))
       val_RSD_performance_color[length(val_RSD_performance_color)-1] = "red"
       val_RSD_performance_color[length(val_RSD_performance_color)] = "#ffbf00"
-      val_RSD_performance_color[names(val_RSD_performance)=='none'] = 'black'
+      val_RSD_performance_color[names(val_RSD_performance)=='raw'] = 'black'
       layout(matrix(c(1,1,2,2), 2, 2, byrow = TRUE))
     }else{
       layout(matrix(c(1,1,2,2), 2, 2, byrow = TRUE))
