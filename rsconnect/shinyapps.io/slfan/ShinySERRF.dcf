@@ -8,6 +8,5 @@ appId: 2439528
 bundleId: 3584831
 url: https://slfan.shinyapps.io/ShinySERRF/
 when: 1599063927.77871
->>>>>>> 1e3bee0580de4635776dfec9ca4bd080e47ade05
 asMultiple: FALSE
 asStatic: FALSE
