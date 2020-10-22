@@ -16,7 +16,7 @@ ui = shinyUI(fluidPage(
   # Application title
   titlePanel("SERRF"),
   
-  em("09/01/2020 n"),
+  em("09/01/2020"),
   
   p("this is a temperal website for SERRF created by Shiny R. Contact slfan at ucdavis dot edu if more information is needed."),
   
@@ -260,7 +260,7 @@ server = shinyServer(function(input, output) {
     
     cat("<--------- Waiting User to Select Dataset File --------->\n")
     # df <- read.csv(input$file1$datapath, header = FALSE, stringsAsFactors = FALSE)
-    # input = list(file1 = list(datapath = "SERRF example dataset - Copy.xlsx"))
+    # input = list(file1 = list(datapath = "SERRF example dataset - with validate.xlsx"))
     file_location = input$file1$datapath
     dta = read_data(file_location)
     # cat("<--------- Dataset is read --------->\n")
@@ -619,8 +619,6 @@ server = shinyServer(function(input, output) {
         
         
         
-        
-        
       }else{
         
         example_normed = data.matrix(fread("normalized by - SERRF - with validate.csv")[,-1])
@@ -629,11 +627,22 @@ server = shinyServer(function(input, output) {
       
       normalized_dataset[['SERRF']] = example_normed
       
-      qc_RSDs = fread("RSDs - with validate.csv")[,-c(1,4)]
+      qc_RSDs = fread("RSDs - with validate.csv")[,-c(1,4,5)]
       if(with_validate){
-        val_RSDs = fread("RSDs - with validate.csv")[,4]
+        val_RSDs = fread("RSDs - with validate.csv")[,c(4,5)]
       }
       
+      
+      
+      withProgress(message = 'Normalization in Progress.', value = 0, {
+        for(j in 1:nrow(example_normed)){
+          
+          Sys.sleep(runif(1,min=0.9,max=1.2))
+          incProgress(1/nrow(example_normed), detail = paste("Working on compound", j,"/", nrow(example_normed)))
+          
+        }
+        
+      })
       
       
     }
