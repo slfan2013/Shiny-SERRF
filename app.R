@@ -560,11 +560,11 @@ server = shinyServer(function(input, output) {
     if(with_validate){
       val_RSDs = list()
       
-      val_RSDs[['raw']] = RSD(e[,p$sampleType == 'validate'])
+      val_RSDs[['raw-validate']] = RSD(e[,p$sampleType == 'validate'])
       
-      val_RSDs[['SERRF']] = RSD(e_norm[,p$sampleType=='validate'])
-      cat(paste0("Average Validate Sample RSD:",signif(median(val_RSDs[['SERRF']],na.rm = TRUE),4)*100,"%.\n"))
-      cat(paste0("Number of compounds less than 20% Validate Sample RSD:",sum(val_RSDs[['SERRF']]<0.2,na.rm = TRUE),".\n"))
+      val_RSDs[['SERRF-validate']] = RSD(e_norm[,p$sampleType=='validate'])
+      cat(paste0("Average Validate Sample RSD:",signif(median(val_RSDs[['SERRF-validate']],na.rm = TRUE),4)*100,"%.\n"))
+      cat(paste0("Number of compounds less than 20% Validate Sample RSD:",sum(val_RSDs[['SERRF-validate']]<0.2,na.rm = TRUE),".\n"))
     }
     
     
@@ -645,7 +645,7 @@ server = shinyServer(function(input, output) {
         }
         
       })
-      
+
       
     }
     
