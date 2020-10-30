@@ -194,7 +194,7 @@ server = shinyServer(function(input, output) {
       # p = p[sample_order, ]
       # p$time = order(p$time)
       
-      print(length(sample_rank))
+      # print(length(sample_rank))
       
       # p$sampleType[!p$sampleType %in% c("qc", "validate")] = "sample"
       return(list(e = data_matrix_good, f = f, p = p_good, data_matrix = data_matrix,
@@ -285,7 +285,7 @@ server = shinyServer(function(input, output) {
     normalized_dataset = list()
     qc_RSDs = list()
     methods = "SERRF"
-    print(is_example)
+    # print(is_example)
     
     showNotification(paste0("Number of QC: ",sum(p$sampleType=='qc')), duration = 15000)
     showNotification(paste0("Number of Samples: ",sum(p$sampleType=='sample')), duration = 15000)
@@ -366,7 +366,7 @@ server = shinyServer(function(input, output) {
           
           
           
-          print(j)
+          # print(j)
           normalized  = rep(0, ncol(all))
           qc_train_value = list()
           qc_predict_value = list()
@@ -555,14 +555,22 @@ server = shinyServer(function(input, output) {
     colnames(e_norm) = colnames(e)
     qc_RSDs[['SERRF']] = qc_RSD
     calculation_times[['SERRF']] = Sys.time() - start
-    cat(paste0("Average QC RSD:",signif(median(qc_RSDs[['SERRF']],na.rm = TRUE),4)*100,"%.\n"))
-    cat(paste0("Number of compounds less than 20% QC RSD:",sum(qc_RSDs[['SERRF']]<0.2,na.rm = TRUE),".\n"))
+    cat(paste0("raw Average QC RSD:",signif(median(qc_RSDs[['raw']],na.rm = TRUE),4)*100,"%.\n"))
+    cat(paste0("SERRF Average QC RSD:",signif(median(qc_RSDs[['SERRF']],na.rm = TRUE),4)*100,"%.\n"))
+    cat(paste0("raw Number of compounds less than 20% QC RSD:",sum(qc_RSDs[['raw']]<0.2,na.rm = TRUE),".\n"))
+    cat(paste0("SERRF Number of compounds less than 20% QC RSD:",sum(qc_RSDs[['SERRF']]<0.2,na.rm = TRUE),".\n"))
     if(with_validate){
       val_RSDs = list()
       
       val_RSDs[['raw-validate']] = RSD(e[,p$sampleType == 'validate'])
       
       val_RSDs[['SERRF-validate']] = RSD(e_norm[,p$sampleType=='validate'])
+      
+      
+      cat(paste0("Average Validate Sample RSD:",signif(median(val_RSDs[['raw-validate']],na.rm = TRUE),4)*100,"%.\n"))
+      cat(paste0("Number of compounds less than 20% Validate Sample RSD:",sum(val_RSDs[['raw-validate']]<0.2,na.rm = TRUE),".\n"))
+      
+      
       cat(paste0("Average Validate Sample RSD:",signif(median(val_RSDs[['SERRF-validate']],na.rm = TRUE),4)*100,"%.\n"))
       cat(paste0("Number of compounds less than 20% Validate Sample RSD:",sum(val_RSDs[['SERRF-validate']]<0.2,na.rm = TRUE),".\n"))
     }
@@ -702,7 +710,7 @@ server = shinyServer(function(input, output) {
     
     cat(600)
     cat("\n")
-    print(with_validate)
+    # print(with_validate)
     if(with_validate){
       RSDs = cbind(RSDs, do.call("cbind",val_RSDs))
       fwrite(RSDs,"RSDs.csv")

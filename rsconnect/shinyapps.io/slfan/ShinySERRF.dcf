@@ -5,8 +5,8 @@ account: slfan
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 2439528
-bundleId: 3778270
+bundleId: 3778695
 url: https://slfan.shinyapps.io/ShinySERRF/
-when: 1603567850.29778
+when: 1603582096.87511
 asMultiple: FALSE
 asStatic: FALSE
