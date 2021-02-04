@@ -577,6 +577,7 @@ server = shinyServer(function(input, output) {
     
     
     e_norm = e_norm[,sample_rank]
+    e = e[,sample_rank]
     
     cat(length(normalized_dataset))
     cat(class(normalized_dataset))
@@ -684,9 +685,9 @@ server = shinyServer(function(input, output) {
     pca_color = factor(p$sampleType, levels = c('sample','qc','validate'))
     dots = c(1,16,16)[as.numeric(pca_color)]
     
-    sds = apply(e,1,sd)
+    sds = apply(normalized_dataset[['raw']],1,sd)
     
-    pca_before = prcomp(t(e[!sds==0,]),scale. = TRUE)
+    pca_before = prcomp(t(normalized_dataset[['raw']][!sds==0,]),scale. = TRUE)
     # par(mar=c(4,2,4,2)*3)
     plot(pca_before$x[,1],pca_before$x[,2], col = pca_color,main = 'Before',xlab='raw data',cex.lab=5,yaxt='n', cex.axis=5, cex.main=5, cex.sub=5,ylab="", xaxt='n',cex = 5,pch = dots)
     
