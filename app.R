@@ -73,7 +73,7 @@ server = shinyServer(function(input, output) {
   
   result_text <- eventReactive(input$go,{
     shinyjs::disable("go")
-    showNotification("Reading Dataset...", duration = 15000)
+    showNotification("Reading Dataset...", duration = 1500)
     # cl = makeCluster(8)
     # stopCluster(cl)
     # input = list(file1 = "C:\\Users\\slfan\\Documents\\GitHub\\Systematic_Error_Removal_using_Denoising_Autoencoder\\Oliver\\merel Bot Raw injection order.xlsx")
@@ -223,7 +223,8 @@ server = shinyServer(function(input, output) {
     data = read_data(file_location)
     e = data$e_matrix
     f = data$f
-    p <<- data$p
+    # p <<- data$p
+    assign("p", data$p, envir = .GlobalEnv)
     
     pacman::p_load(ranger)
     # check if sampleType is in the dataset
@@ -1011,7 +1012,7 @@ server = shinyServer(function(input, output) {
       withProgress(message = 'Normalization in Progress.', value = 0, {
         for(j in 1:nrow(example_normed)){
           
-          Sys.sleep(runif(1,min=0.9,max=1.2))
+          Sys.sleep(runif(1,min=0.01,max=0.02))
           incProgress(1/nrow(example_normed), detail = paste("Working on compound", j,"/", nrow(example_normed)))
           
         }
@@ -1049,7 +1050,7 @@ server = shinyServer(function(input, output) {
     
     par(lty = 0)
     par(mar=c(5,4,4,2)*3)
-    bp = barplot(qc_RSD_performance*100, main="QC RSD", xlab="", ylab="RSD (%)",col = qc_RSD_performance_color,width = 1,las=2,cex.axis =5, cex.names=5,cex.main = 5)
+    bp = barplot(qc_RSD_performance*100, main="QC RSD", xlab="", ylab="RSD (%)",col = qc_RSD_performance_color,width = 1,las=2,cex.axis =5, cex.names=5,cex.main = 5, ylim = c(0,max(qc_RSD_performance*100*1.1)))
     text(bp[which(names(qc_RSD_performance)=='none'),1], qc_RSD_performance['none']*100, paste0(signif(qc_RSD_performance['none'],4)*100,"%"), cex = 5, pos = 3)
     text(bp[nrow(bp),1], qc_RSD_performance[length(qc_RSD_performance)]*100, paste0(signif(qc_RSD_performance[length(qc_RSD_performance)],4)*100,"%"), cex = 5, pos = 3)
     
@@ -1057,9 +1058,12 @@ server = shinyServer(function(input, output) {
     if(with_validate){
       for(validate_type in validate_types){
         
+        
+        print(val_RSD_performances[[validate_type]]*100)
+        
         par(lty = 0)
         par(mar=c(5,4,4,2)*3)
-        bp = barplot(val_RSD_performances[[validate_type]]*100, main=paste0(validate_type," Sample RSD"), xlab="", ylab="RSD (%)",col = val_RSD_performances_color[[validate_type]],width = 1,las=2,cex.axis =5, cex.names=5,cex.main = 5)
+        bp = barplot(val_RSD_performances[[validate_type]]*100, main=paste0(validate_type," Sample RSD"), xlab="", ylab="RSD (%)",col = val_RSD_performances_color[[validate_type]],width = 1,las=2,cex.axis =5, cex.names=5,cex.main = 5, ylim = c(0,max(val_RSD_performances[[validate_type]]*100*1.1)))
         text(bp[which(names(val_RSD_performances[[validate_type]])=='none'),1], val_RSD_performances[[validate_type]]['none']*100, paste0(signif(val_RSD_performances[[validate_type]]['none'],4)*100,"%"), cex = 5, pos = 3)
         text(bp[nrow(bp),1], val_RSD_performances[[validate_type]][length(val_RSD_performances[[validate_type]])]*100, paste0(signif(val_RSD_performances[[validate_type]][length(val_RSD_performances[[validate_type]])],4)*100,"%"), cex = 5, pos = 3)
         
