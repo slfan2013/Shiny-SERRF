@@ -19,4 +19,5 @@ Follow the [example dataset](https://github.com/slfan2013/Shiny-SERRF/raw/master
 
 It requries _batch_, _sampleType_, _time_, _label_ for samples, and _No_ for compounds.
 
+_sampleType_ requires _qc_, _sample_. It can also take other validate samples
 
