@@ -27,7 +27,7 @@ Note, if you have blank samples which are suggested not to be normalized, leave 
 
 _time_ is the processing order. It can be real time values, or simply integer indicating the processing order of the samples/qcs.
 
-_label_ is the sample labels (row #4) and compound labels (column A).
+_label_ is the sample labels (row #4) and compound labels (column B).
 
 _No_ is the compound index.
 
