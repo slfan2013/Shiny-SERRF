@@ -30,3 +30,6 @@ _time_ is the processing order. It can be real time values, or simply integer in
 _label_ is the sample labels (row #4) and compound labels (column A).
 
 _No_ is the compound index.
+
+## Contact
+slfan at ucdavis at edu
