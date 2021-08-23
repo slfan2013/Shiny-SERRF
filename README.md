@@ -17,4 +17,6 @@ https://slfan.shinyapps.io/ShinySERRF/
 ## Input file format
 Follow the [example dataset](https://github.com/slfan2013/Shiny-SERRF/raw/master/SERRF%20example%20dataset.xlsx).
 
+It requries _batch_, _sampleType_, _time_, _label_ for samples, and _No_ for compounds.
+
 
