@@ -9,3 +9,9 @@ Download Zip.
 Open the app.R file in RStudio. 
 
 Then in RStudio, click Run App button.
+
+## To run SERRF online
+https://slfan.shinyapps.io/ShinySERRF/
+
+
+
