@@ -73,7 +73,7 @@ server = shinyServer(function(input, output) {
   
   result_text <- eventReactive(input$go,{
     shinyjs::disable("go")
-    showNotification("Reading Dataset...", duration = 1500)
+    showNotification("Reading Dataset...", duration = 15)
     # cl = makeCluster(8)
     # stopCluster(cl)
     # input = list(file1 = "C:\\Users\\slfan\\Documents\\GitHub\\Systematic_Error_Removal_using_Denoising_Autoencoder\\Oliver\\merel Bot Raw injection order.xlsx")
