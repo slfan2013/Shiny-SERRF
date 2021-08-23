@@ -15,5 +15,7 @@ https://slfan.shinyapps.io/ShinySERRF/
 
 
 ## Input file format
+Follow the example dataset here,
+https://github.com/slfan2013/Shiny-SERRF/raw/master/SERRF%20example%20dataset.xlsx
 
 
