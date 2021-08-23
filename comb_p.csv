@@ -1,6 +1,6 @@
 ﻿label,batch,sampleType,time,sample_index
 QC000,A,qc,1,1
-sample01,A,sample,2,2
+sample01,A,validate,2,2
 GB001617,A,sample,3,3
 GB001333,A,sample,4,4
 GB001191,A,sample,5,5
@@ -111,7 +111,7 @@ GB002416,A,sample,109,109
 GB002166,A,sample,110,110
 GB002328,A,sample,111,111
 QC010,A,qc,112,112
-sample02,A,sample,113,113
+sample02,A,validate,113,113
 GB001976,A,sample,114,114
 GB002035,A,sample,115,115
 GB002041,A,sample,116,116
@@ -219,7 +219,7 @@ GB003845,A,sample,217,217
 GB003262,A,sample,218,218
 GB003984,A,sample,219,219
 QC020,A,qc,220,220
-sample03,A,sample,221,221
+sample03,A,validate,221,221
 GB003205,A,sample,222,222
 GB003445,A,sample,223,223
 GB003897,A,sample,224,224
@@ -335,7 +335,7 @@ GB004171,A,sample,333,333
 GB004332,A,sample,334,334
 QC031,A,qc,335,335
 QC000,B,qc,336,336
-sample01,B,sample,337,337
+sample01,B,validate,337,337
 GB004487,B,sample,338,338
 GB004446,B,sample,339,339
 GB004419,B,sample,340,340
@@ -446,7 +446,7 @@ GB004701,B,sample,444,444
 GB004634,B,sample,445,445
 GB004676,B,sample,446,446
 QC010,B,qc,447,447
-sample02,B,sample,448,448
+sample02,B,validate,448,448
 GB004577,B,sample,449,449
 GB004601,B,sample,450,450
 GB004603,B,sample,451,451
@@ -555,7 +555,7 @@ GB004944,B,sample,553,553
 GB004883,B,sample,554,554
 GB005000,B,sample,555,555
 QC020,B,qc,556,556
-sample03,B,sample,557,557
+sample03,B,validate,557,557
 GB004860,B,sample,558,558
 GB004916,B,sample,559,559
 GB004966,B,sample,560,560
@@ -671,7 +671,7 @@ GB004897,B,sample,669,669
 GB004961,B,sample,670,670
 QC032,B,qc,671,671
 QC000,C,qc,672,672
-sample01,C,sample,673,673
+sample01,C,validate,673,673
 GB005324,C,sample,674,674
 GB005329,C,sample,675,675
 GB005331,C,sample,676,676
@@ -780,7 +780,7 @@ GB005649,C,sample,778,778
 GB005653,C,sample,779,779
 GB005655,C,sample,780,780
 QC010,C,qc,781,781
-sample02,C,sample,782,782
+sample02,C,validate,782,782
 GB005660,C,sample,783,783
 GB005661,C,sample,784,784
 GB005670,C,sample,785,785
@@ -891,7 +891,7 @@ GB015113,C,sample,889,889
 GB015133,C,sample,890,890
 GB015136,C,sample,891,891
 QC020,C,qc,892,892
-sample03,C,sample,893,893
+sample03,C,validate,893,893
 GB015144,C,sample,894,894
 GB015160,C,sample,895,895
 GB015164,C,sample,896,896
@@ -1006,7 +1006,7 @@ GB005442,C,sample,1004,1004
 GB015505,C,sample,1005,1005
 QC031,C,qc,1006,1006
 QC000,D,qc,1007,1007
-sample01,D,sample,1008,1008
+sample01,D,validate,1008,1008
 GB032924,D,sample,1009,1009
 GB032929,D,sample,1010,1010
 GB032931,D,sample,1011,1011
@@ -1114,7 +1114,7 @@ MG006858,D,sample,1112,1112
 MG006874,D,sample,1113,1113
 MG006883,D,sample,1114,1114
 QC010,D,qc,1115,1115
-sample02,D,sample,1116,1116
+sample02,D,validate,1116,1116
 MG006888,D,sample,1117,1117
 MG006903,D,sample,1118,1118
 MG006904,D,sample,1119,1119
@@ -1223,7 +1223,7 @@ MG008002,D,sample,1221,1221
 MG008013,D,sample,1222,1222
 MG008015,D,sample,1223,1223
 QC020,D,qc,1224,1224
-sample03,D,sample,1225,1225
+sample03,D,validate,1225,1225
 MG008018,D,sample,1226,1226
 MG008026,D,sample,1227,1227
 MG008042,D,sample,1228,1228

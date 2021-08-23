@@ -25,7 +25,7 @@ ui = shinyUI(fluidPage(
   
   p("1 Click Browse to upload dataset. 2 Click Start and wait for normalization. 3 Download result when finish. Message will be given if success or fail."),
   
-  url <- a("Example Dataset", href="https://github.com/slfan2013/Shiny-SERRF/raw/master/SERRF%20example%20dataset.xlsx"),
+  url <- a("Example Dataset", href="https://github.com/slfan2013/Shiny-SERRF/raw/master/SERRF example dataset - with validate.xlsx"),
   
   
   # Sidebar with a slider input for number of bins
@@ -225,6 +225,7 @@ server = shinyServer(function(input, output) {
     f = data$f
     # p <<- data$p
     assign("p", data$p, envir = .GlobalEnv)
+
     
     pacman::p_load(ranger)
     # check if sampleType is in the dataset
@@ -989,6 +990,13 @@ server = shinyServer(function(input, output) {
       # stop("Unexpected error occurred.")
     }else{
       
+      
+      
+      # assign("p", p, envir = .GlobalEnv)
+      # assign("e", e, envir = .GlobalEnv)
+      # assign("infinite_index", infinite_index, envir = .GlobalEnv)
+      
+      
       example_normed = data.matrix(fread("normalized by - SERRF - with validate.csv")[,-1])
       
       normalized_dataset[['raw']] = e
@@ -997,9 +1005,11 @@ server = shinyServer(function(input, output) {
       validate_types = 'validate'
       
       qc_RSDs = fread("RSDs - with validate.csv")[,-c(1,4,5)]
+      colnames(qc_RSDs) = c("none","SERRF")
       with_validate = TRUE
       if(with_validate){
         val_RSDs = fread("RSDs - with validate.csv")[,c(4,5)]
+        colnames(val_RSDs) = c("none","SERRF")
         val_RSDs[[validate_types]] = val_RSDs
       }
       
@@ -1012,7 +1022,7 @@ server = shinyServer(function(input, output) {
       withProgress(message = 'Normalization in Progress.', value = 0, {
         for(j in 1:nrow(example_normed)){
           
-          Sys.sleep(runif(1,min=0.1,max=1.02))
+          Sys.sleep(runif(1,min=0.1,max=0.2))
           incProgress(1/nrow(example_normed), detail = paste("Working on compound", j,"/", nrow(example_normed)))
           
         }
@@ -1244,7 +1254,7 @@ server = shinyServer(function(input, output) {
       "SERRF Result.zip"
     },
     content = function(fname) {
-      zip(fname, c("Bar Plot and PCA plot.png",paste0("normalized by - SERRF.csv"),"QC-RSDs.csv"))
+      zip::zip(fname, c("Bar Plot and PCA plot.png",paste0("normalized by - SERRF.csv"),"QC-RSDs.csv"))
     },
     contentType = "application/zip"
   )
