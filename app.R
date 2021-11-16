@@ -706,7 +706,7 @@ server = shinyServer(function(input, output) {
       # sampleType. = c(p$sampleType[p$sampleType=='qc'],p$sampleType[p$sampleType=='sample'])
       
       serrf_normalized = e
-      serrf_normalized_modeled = serrfR(train = e_qc, target = e_sample, num = num,batch. = factor(c(p_qc$batch, p_sample$batch)),time. = c(p_qc$time, p_sample$time),sampleType. = c(p_qc$sampleType, p_sample$sampleType),minus,cl)
+      serrf_normalized_modeled = serrfR(train = e_qc, target = e_sample, num = 10,batch. = factor(c(p_qc$batch, p_sample$batch)),time. = c(p_qc$time, p_sample$time),sampleType. = c(p_qc$sampleType, p_sample$sampleType),minus,cl)
       
       serrf_qc = serrf_normalized_modeled$normed_train
       colnames(serrf_qc) = colnames(e_qc)
@@ -749,7 +749,7 @@ server = shinyServer(function(input, output) {
           }
           
           try = tryCatch({#!!!
-            serrf_normalized_on_cross_validate = serrfR(train = e_qc[,train_index], target = e_qc[,test_index], num = num,batch. = factor(c(p_qc$batch[train_index],p_qc$batch[test_index])),time. = c(p_qc$time[train_index],p_qc$time[test_index]),sampleType. = rep(c("qc","sample"),c(length(train_index),length(test_index))),minus,cl)
+            serrf_normalized_on_cross_validate = serrfR(train = e_qc[,train_index], target = e_qc[,test_index], num = 10,batch. = factor(c(p_qc$batch[train_index],p_qc$batch[test_index])),time. = c(p_qc$time[train_index],p_qc$time[test_index]),sampleType. = rep(c("qc","sample"),c(length(train_index),length(test_index))),minus,cl)
           }, error = function(e){
             "Error"
           })
@@ -778,13 +778,13 @@ server = shinyServer(function(input, output) {
         
         for(validate_type in validate_types){
           
-          serrf_validates[[validate_type]] = serrfR(train = e_qc, target = e_validates[[validate_type]], num = num,batch. = factor(c(p_qc$batch, p_validates[[validate_type]]$batch)),time. = c(p_qc$time, p_validates[[validate_type]]$time),sampleType. = rep(c("qc","sample"),c(nrow(p_qc),nrow(p_validates[[validate_type]]))),minus,cl)$normed_target
+          serrf_validates[[validate_type]] = serrfR(train = e_qc, target = e_validates[[validate_type]], num = 10,batch. = factor(c(p_qc$batch, p_validates[[validate_type]]$batch)),time. = c(p_qc$time, p_validates[[validate_type]]$time),sampleType. = rep(c("qc","sample"),c(nrow(p_qc),nrow(p_validates[[validate_type]]))),minus,cl)$normed_target
           
           
           val_RSDs[[validate_type]][['SERRF']] = RSD(serrf_validates[[validate_type]])
           
           
-          serrf_validates[[validate_type]] = serrfR(train = e_qc, target = e_validates[[validate_type]], num = num,batch. = factor(c(p_qc$batch, p_validates[[validate_type]]$batch)),time. = c(p_qc$time, p_validates[[validate_type]]$time),sampleType. = rep(c("qc","sample"),c(nrow(p_qc),nrow(p_validates[[validate_type]]))),minus,cl)$normed_target
+          serrf_validates[[validate_type]] = serrfR(train = e_qc, target = e_validates[[validate_type]], num = 10,batch. = factor(c(p_qc$batch, p_validates[[validate_type]]$batch)),time. = c(p_qc$time, p_validates[[validate_type]]$time),sampleType. = rep(c("qc","sample"),c(nrow(p_qc),nrow(p_validates[[validate_type]]))),minus,cl)$normed_target
           colnames(serrf_validates[[validate_type]]) = colnames(e_validates[[validate_type]])
           
           
@@ -864,7 +864,7 @@ server = shinyServer(function(input, output) {
       
       
       
-      # serrf_normalized_modeled = serrfR(train = e[,p$sampleType == 'qc'], target = e[,p$sampleType == 'sample'], num = num,batch. = factor(c(batch[p$sampleType=='qc'],batch[p$sampleType=='sample'])),time. = c(time[p$sampleType=='qc'],time[p$sampleType=='sample']),sampleType. = c(p$sampleType[p$sampleType=='qc'],p$sampleType[p$sampleType=='sample']),cl=cl)
+      # serrf_normalized_modeled = serrfR(train = e[,p$sampleType == 'qc'], target = e[,p$sampleType == 'sample'], num = 10,batch. = factor(c(batch[p$sampleType=='qc'],batch[p$sampleType=='sample'])),time. = c(time[p$sampleType=='qc'],time[p$sampleType=='sample']),sampleType. = c(p$sampleType[p$sampleType=='qc'],p$sampleType[p$sampleType=='sample']),cl=cl)
       # 
       # 
       # 
@@ -894,7 +894,7 @@ server = shinyServer(function(input, output) {
       #       train_index = sample(1L:sum(p$sampleType=='qc'),round(sum(p$sampleType=='qc')*ratio))
       #       test_index = c(1L:sum(p$sampleType=='qc'))[!(c(1L:sum(p$sampleType=='qc'))%in%train_index)]
       #     }
-      #     serrf_normalized_on_cross_validate = serrfR(train = qc_only_data[,train_index], target = qc_only_data[,test_index], num = num,batch. = factor(c(batch[p$sampleType=='qc'][train_index],batch[p$sampleType=='qc'][test_index])),time. = c(time[p$sampleType=='qc'][train_index],time[p$sampleType=='qc'][test_index]),sampleType. = rep(c("qc","sample"),c(length(train_index),length(test_index))),F,cl)
+      #     serrf_normalized_on_cross_validate = serrfR(train = qc_only_data[,train_index], target = qc_only_data[,test_index], num = 10,batch. = factor(c(batch[p$sampleType=='qc'][train_index],batch[p$sampleType=='qc'][test_index])),time. = c(time[p$sampleType=='qc'][train_index],time[p$sampleType=='qc'][test_index]),sampleType. = rep(c("qc","sample"),c(length(train_index),length(test_index))),F,cl)
       #     
       #     RSDs[[k]] = RSD(serrf_normalized_on_cross_validate$normed_target)
       #   }
@@ -906,7 +906,7 @@ server = shinyServer(function(input, output) {
       # 
       # if(with_validate){
       #   #showNotification("Working on the validate samples ...", duration = 15000)
-      #   serrf_normalized_validate = serrfR(train = e[,p$sampleType == 'qc'], target = e[,p$sampleType == 'validate'], num = num,batch. = factor(c(batch[p$sampleType=='qc'],batch[p$sampleType=='validate'])),time. = c(time[p$sampleType=='qc'],time[p$sampleType=='validate']),sampleType. = c(p$sampleType[p$sampleType=='qc'],p$sampleType[p$sampleType=='validate']),cl=cl)
+      #   serrf_normalized_validate = serrfR(train = e[,p$sampleType == 'qc'], target = e[,p$sampleType == 'validate'], num = 10,batch. = factor(c(batch[p$sampleType=='qc'],batch[p$sampleType=='validate'])),time. = c(time[p$sampleType=='qc'],time[p$sampleType=='validate']),sampleType. = c(p$sampleType[p$sampleType=='qc'],p$sampleType[p$sampleType=='validate']),cl=cl)
       #   e_norm = e
       #   e_norm[,p$sampleType=='qc'] = serrf_normalized[,p$sampleType == 'qc']
       #   e_norm[,p$sampleType=='sample'] = serrf_normalized[,p$sampleType == 'sample']
@@ -931,7 +931,7 @@ server = shinyServer(function(input, output) {
       #   val_RSDs = list()
       #   
       #   val_RSDs[['raw-validate']] = RSD(e[,p$sampleType == 'validate'])
-      #   val_RSDs[['SERRF-validate']] = RSD(serrfR(train = e[,p$sampleType == 'qc'], target = e[,p$sampleType == 'validate'], num = num,batch. = factor(c(batch[p$sampleType=='qc'],batch[p$sampleType=='validate'])),time. = c(time[p$sampleType=='qc'],time[p$sampleType=='validate']),sampleType. = c(p$sampleType[p$sampleType=='qc'],p$sampleType[p$sampleType=='validate']),F,cl=cl)$normed_target)
+      #   val_RSDs[['SERRF-validate']] = RSD(serrfR(train = e[,p$sampleType == 'qc'], target = e[,p$sampleType == 'validate'], num = 10,batch. = factor(c(batch[p$sampleType=='qc'],batch[p$sampleType=='validate'])),time. = c(time[p$sampleType=='qc'],time[p$sampleType=='validate']),sampleType. = c(p$sampleType[p$sampleType=='qc'],p$sampleType[p$sampleType=='validate']),F,cl=cl)$normed_target)
       #   
       #   
       #   cat(paste0("Average Validate Sample RSD:",signif(median(val_RSDs[['raw-validate']],na.rm = TRUE),4)*100,"%.\n"))
